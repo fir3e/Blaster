@@ -75,3 +75,4 @@ DerivedDataCache/*
 
 Content/*
 !Content/Maps/
+!Content/Blueprints/
