@@ -22,6 +22,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShowPlayerNetRole(APawn* InPawn);
 
+	UFUNCTION(BlueprintCallable)
+	void ShowPlayerName(APawn* InPawn);
+
 protected:
 	virtual void NativeDestruct() override;
+
+private:
+	UPROPERTY(EditAnywhere, Category = "Overhead Widget Properties", meta = (AllowPrivateAccess = true, Units = "Seconds"))
+	float GetPlayerNameTimeout = 30.f;
+	UPROPERTY(EditAnywhere, Category = "Overhead Widget Properties", meta = (AllowPrivateAccess = true, Units = "Seconds"))
+	float GetPlayerNameInterval = 0.1f;
+	float TotalTime = -0.1f;
 };
