@@ -20,8 +20,8 @@ UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AWeapon();
 	virtual void Tick(float DeltaTime) override;
 	void ShowPickupWidget(bool bShowWidget);
@@ -60,6 +60,6 @@ private:
 	class UWidgetComponent* PickupWidget;
 
 public:
-
+	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
 
 };
