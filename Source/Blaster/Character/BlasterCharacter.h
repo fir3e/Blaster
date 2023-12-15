@@ -38,9 +38,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* EquipAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* CrouchAction;
+
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void EquipButtonPressed();
+	void CrouchButtonPressed();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
