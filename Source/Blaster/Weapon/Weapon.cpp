@@ -10,6 +10,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Casing.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AWeapon::AWeapon()
 {
@@ -140,6 +141,8 @@ void AWeapon::Fire(const FVector& HitTarget)
 		if (AmmoEjectSocket)
 		{
 			FTransform SocketTransform = AmmoEjectSocket->GetSocketTransform(WeaponMesh);
+			const FRotator RandRotator = UKismetMathLibrary::RandomRotator();
+			const FRotator LerpedRot = UKismetMathLibrary::RLerp(SocketTransform.GetRotation().Rotator(), RandRotator, .35f, true);
 
 			UWorld* World = GetWorld();
 			if (World)
@@ -147,7 +150,7 @@ void AWeapon::Fire(const FVector& HitTarget)
 				World->SpawnActor<ACasing>(
 					CasingClass,
 					SocketTransform.GetLocation(),
-					SocketTransform.GetRotation().Rotator()
+					LerpedRot
 				);
 			}
 		}
