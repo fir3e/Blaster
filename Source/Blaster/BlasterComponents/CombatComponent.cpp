@@ -123,7 +123,8 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				0.5f +
 				CrosshairVelocityFactor +
 				CrosshairInAirFactor -
-				CrosshairAimFactor +
+				CrosshairAimFactor -
+				CrosshairShrinkAimAtPlayer +
 				CrosshairShootingFactor;
 
 			HUD->SetHUDPackage(HUDPackage);
@@ -232,10 +233,12 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>())
 		{
 			HUDPackage.CrosshairsColor = FLinearColor::Red;
+			CrosshairShrinkAimAtPlayer = 0.2f;
 		}
 		else
 		{
 			HUDPackage.CrosshairsColor = FLinearColor::White;
+			CrosshairShrinkAimAtPlayer = 0.f;
 		}
 		// This is a temp fix?
 		if (!TraceHitResult.bBlockingHit) { TraceHitResult.ImpactPoint = End; }
