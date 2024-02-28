@@ -53,23 +53,28 @@ void AProjectile::BeginPlay()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
-	bool bCharacterHit = false;
-	if (BlasterCharacter)
-	{
-		BlasterCharacter->MulticastHit();
-		bCharacterHit = true;
-		//ImpactParticles = ImpactCharacterParticles;
-	}
+	//ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	//bool bCharacterHit = false;
+	//if (BlasterCharacter)
+	//{
+	//	BlasterCharacter->MulticastHit();
+	//	bCharacterHit = true;
+	//	//ImpactParticles = ImpactCharacterParticles;
+	//}
 
-	MultiCast_OnHit(bCharacterHit);
-}
+	//MultiCast_OnHit(bCharacterHit);
 
-void AProjectile::MultiCast_OnHit_Implementation(bool bCharacterHit)
-{
-	ImpactParticles = bCharacterHit ? ImpactCharacterParticles : ImpactObstacleParticles;
 	Destroy();
 }
+
+//
+// *** Different Impact Particles ***
+// 
+//void AProjectile::MultiCast_OnHit_Implementation(bool bCharacterHit)
+//{
+//	ImpactParticles = bCharacterHit ? ImpactCharacterParticles : ImpactObstacleParticles;
+//	Destroy();
+//}
 
 void AProjectile::Tick(float DeltaTime)
 {
