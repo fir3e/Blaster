@@ -22,8 +22,10 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void Jump() override;
 	void PlayFireMontage(bool bAiming);
-
+	void PlayElimMontage();
 	virtual void OnRep_ReplicatedMovement() override;
+
+	UFUNCTION(NetMulticast, Reliable)
 	void Elim();
 protected:
 	virtual void BeginPlay() override;
@@ -105,6 +107,9 @@ private:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ElimMontage;
+
 	void HideCameraIfCharacterClose();
 
 	UPROPERTY(EditAnywhere)
@@ -133,6 +138,8 @@ private:
 
 	class ABlasterPlayerController* BlasterPlayerController;
 
+	bool bElimmed = false;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();
@@ -144,4 +151,5 @@ public:
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 };
