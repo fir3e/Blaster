@@ -31,7 +31,7 @@ void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 {
 	SetDefeats(GetDefeats() + DefeatsAmount);
 	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
-	if (Character && Character->Controller)
+	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 		if (Controller)
@@ -59,7 +59,7 @@ void ABlasterPlayerState::OnRep_Score()
 void ABlasterPlayerState::OnRep_Defeats()
 {
 	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetPawn()) : Character;
-	if (Character && Character->Controller)
+	if (Character)
 	{
 		Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 		if (Controller)
