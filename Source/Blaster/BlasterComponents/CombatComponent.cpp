@@ -219,6 +219,10 @@ bool UCombatComponent::CanFire()
 	return !EquippedWeapon->IsEmpty() || !bCanFire;
 }
 
+void UCombatComponent::OnRep_CarriedAmmo()
+{
+}
+
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	MulticastFire(TraceHitTarget);
