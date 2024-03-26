@@ -55,6 +55,7 @@ protected:
 
 	void HandleReload();
 
+	FTimerHandle TimerHandle_StopReload;
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;

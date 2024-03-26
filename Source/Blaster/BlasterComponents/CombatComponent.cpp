@@ -322,7 +322,9 @@ void UCombatComponent::OnRep_CombatState()
 
 void UCombatComponent::HandleReload()
 {
+	float AnimDuration = 2.f;
 	Character->PlayReloadMontage();
+	Character->GetWorldTimerManager().SetTimer(TimerHandle_StopReload, this, &UCombatComponent::FinishReloading, AnimDuration, false);
 }
 
 void UCombatComponent::OnRep_EquippedWeapon()
