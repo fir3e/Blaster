@@ -54,6 +54,7 @@ protected:
 	void ServerReload();
 
 	void HandleReload();
+	int32 AmountToReload();
 
 	FTimerHandle TimerHandle_StopReload;
 private:
@@ -139,6 +140,8 @@ private:
 
 	UFUNCTION()
 	void OnRep_CombatState();
+
+	void UpdateAmmoValues();
 
 public:	
 
