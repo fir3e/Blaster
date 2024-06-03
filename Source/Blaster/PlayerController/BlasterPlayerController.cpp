@@ -176,6 +176,15 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 			return;
 		}
 
+		if (CountdownTime <= 30)
+		{
+			BlasterHUD->CharacterOverlay->PlayAnimation(
+				BlasterHUD->CharacterOverlay->CountdownAnimation,
+				0,
+				30
+			);
+		}
+
 		int32 Minutes = FMath::FloorToInt(CountdownTime / 60.f);
 		int32 Seconds = CountdownTime - Minutes * 60;
 
