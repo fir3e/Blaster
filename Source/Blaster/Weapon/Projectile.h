@@ -26,21 +26,9 @@ protected:
 
 	//UFUNCTION(NetMulticast, Reliable)
 	//void MultiCast_OnHit(bool bCharacterHit);
-private:
-	UPROPERTY(EditAnywhere)
-	class UBoxComponent* CollisionBox;
-
-	UPROPERTY(VisibleAnywhere)
-	class UProjectileMovementComponent* ProjectileMovementComponent;
 
 	UPROPERTY(EditAnywhere)
-	class UParticleSystem* Tracer;
-
-	UPROPERTY()
-	class UParticleSystemComponent* TracerComponent;
-
-	UPROPERTY(EditAnywhere)
-	UParticleSystem* ImpactParticles;
+	class UParticleSystem* ImpactParticles;
 
 	//UPROPERTY(EditAnywhere)
 	//UParticleSystem* ImpactObstacleParticles;
@@ -50,6 +38,18 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
+	UPROPERTY(EditAnywhere)
+	class UBoxComponent* CollisionBox;
+private:
+
+	UPROPERTY(VisibleAnywhere)
+	class UProjectileMovementComponent* ProjectileMovementComponent;
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* Tracer;
+
+	UPROPERTY()
+	class UParticleSystemComponent* TracerComponent;
 
 public:
 	
