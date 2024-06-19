@@ -20,6 +20,7 @@ protected:
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit) override;
 	virtual void BeginPlay() override;
 	void DestroyTimerFinished();
+	void FuseTimerFinished();
 
 	UPROPERTY(EditAnywhere)
 	class UNiagaraSystem* TrailSystem;
@@ -46,4 +47,11 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float DestroyTime = 3.f;
+
+	FTimerHandle FuseTimer;
+
+	UPROPERTY(EditAnywhere)
+	float FuseTime = 3.f;
+
+	bool bIsActive = true;
 };
