@@ -135,6 +135,11 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 				CrosshairShootingFactor;
 
 			HUD->SetHUDPackage(HUDPackage);
+
+			if (bAiming && EquippedWeapon && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+			{
+				HUDPackage.CrosshairsColor = FLinearColor::Transparent;
+			}
 		}
 	}
 }
@@ -159,11 +164,16 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
+	if (Character == nullptr || EquippedWeapon == nullptr ) return;
 	bAiming = bIsAiming;
 	ServerSetAiming(bIsAiming);
 	if (Character)
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+	if (Character->IsLocallyControlled() && EquippedWeapon->GetWeaponType() == EWeaponType::EWT_SniperRifle)
+	{
+		Character->ShowSniperScopeWidget(bIsAiming);
 	}
 }
 
@@ -468,5 +478,5 @@ void UCombatComponent::InitializeCarriedAmmo()
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPistolAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_SubmachineGun, StartingSMGAmmo);
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_Shotgun, StartingShotgunAmmo);
-	CarriedAmmoMap.Emplace(EWeaponType::EWT_SniperRifle, StartingShotgunAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_SniperRifle, StartingSniperAmmo);
 }
