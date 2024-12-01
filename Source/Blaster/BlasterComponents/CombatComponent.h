@@ -164,7 +164,7 @@ private:
 
 	void InitializeCarriedAmmo();
 
-	UPROPERTY(ReplicatedUsing = OnRep_CombatState)
+	UPROPERTY(VisibleAnywhere ,ReplicatedUsing = OnRep_CombatState)
 	ECombatState CombatState = ECombatState::ECS_Unoccupied;
 
 	UFUNCTION()
