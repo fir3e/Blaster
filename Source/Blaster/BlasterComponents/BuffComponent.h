@@ -19,6 +19,8 @@ public:
 	void Heal(float HealAmount, float HealingTime);
 	void BuffSpeed(float BuffBaseSpeed, float BuffCrouchSpeed, float BuffTime);
 	void SetInitialSpeeds(float BaseSpeed, float CrouchSpeed);
+	void BuffJump(float BuffJumpVelocity, float BuffTime);
+	void SetInitialJumpVelocity(float Velocity);
 protected:
 	virtual void BeginPlay() override;
 	void HealRampUp(float DeltaTime);
@@ -46,6 +48,16 @@ private:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSpeedBuff(float BaseSpeed, float CrouchSpeed);
+
+	/**
+	* Jump buff
+	*/
+	FTimerHandle JumpBuffTimer;
+	void ResetJump();
+	float InitialJumpVelocity;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastJumpBuff(float JumpVelocity);
 
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

@@ -556,6 +556,7 @@ void ABlasterCharacter::PostInitializeComponents()
 			GetCharacterMovement()->MaxWalkSpeed,
 			GetCharacterMovement()->MaxWalkSpeedCrouched
 		);
+		Buff->SetInitialJumpVelocity(GetCharacterMovement()->JumpZVelocity);
 	}
 }
 
