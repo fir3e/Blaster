@@ -52,6 +52,11 @@ protected:
 	UPROPERTY()
 	class ABlasterPlayerController* Controller;
 
+	TDoubleLinkedList<FFramePackage> FrameHistory;
+
+	UPROPERTY(EditAnywhere)
+	float MaxRecordTime = 4.f;
+
 public:
 	
 
