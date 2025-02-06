@@ -325,6 +325,19 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
+	/**
+	* Debug movement for server character
+	*/
+
+	UPROPERTY(EditAnywhere)
+	bool bSimulateMovement = false;
+
+	void ToggleMovementDirection();
+
+	bool bIsMovingForward = true;
+
+	FTimerHandle MovementTimerHandle;
+
 public:
 	void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped();

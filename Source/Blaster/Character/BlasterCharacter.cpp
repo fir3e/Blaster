@@ -350,6 +350,11 @@ void ABlasterCharacter::BeginPlay()
 		AttachedGrenade->SetVisibility(false);
 	}
 	
+	// Simulate Fake Movement
+	if (bSimulateMovement)
+	{
+		GetWorldTimerManager().SetTimer(MovementTimerHandle, this, &ABlasterCharacter::ToggleMovementDirection, 2.0f, true);
+	}
 }
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
@@ -389,6 +394,11 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	}
 }
 
+void ABlasterCharacter::ToggleMovementDirection()
+{
+	bIsMovingForward = !bIsMovingForward;
+}
+
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -397,6 +407,20 @@ void ABlasterCharacter::Tick(float DeltaTime)
 
 	HideCameraIfCharacterClose();
 	PollInit();
+
+	// Going back and forward switching every 2 seconds
+	if (bSimulateMovement && HasAuthority())
+	{
+		if (bIsMovingForward)
+		{
+			AddMovementInput(GetActorForwardVector(), 1.0f);
+		}
+		else
+		{
+			AddMovementInput(GetActorForwardVector(), -1.0f);
+		}
+	}
+
 }
 
 
