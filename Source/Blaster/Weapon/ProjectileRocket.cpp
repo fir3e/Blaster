@@ -20,8 +20,34 @@ AProjectileRocket::AProjectileRocket()
 	RocketMovementComponent = CreateDefaultSubobject<URocketMovementComponent>(TEXT("RocketMovementComponent"));
 	RocketMovementComponent->bRotationFollowsVelocity = true;
 	RocketMovementComponent->SetIsReplicated(true);
+
+	RocketMovementComponent->InitialSpeed = InitialSpeed;
+	RocketMovementComponent->MaxSpeed = InitialSpeed;
 }
 
+#if WITH_EDITOR
+void AProjectileRocket::PostEditChangeProperty(FPropertyChangedEvent& Event)
+{
+	Super::PostEditChangeProperty(Event);
+
+	FName PropertyName = Event.Property != nullptr ? Event.Property->GetFName() : NAME_None;
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AProjectileRocket, InitialSpeed))
+	{
+		if (RocketMovementComponent)
+		{
+			RocketMovementComponent->InitialSpeed = InitialSpeed;
+			RocketMovementComponent->MaxSpeed = InitialSpeed;
+		}
+	}
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(AProjectileRocket, GravityPredict))
+	{
+		if (RocketMovementComponent)
+		{
+			RocketMovementComponent->ProjectileGravityScale = GravityPredict;
+		}
+	}
+}
+#endif
 
 void AProjectileRocket::BeginPlay()
 {
@@ -60,6 +86,25 @@ void AProjectileRocket::BeginPlay()
 		&AProjectileRocket::FuseTimerFinished,
 		FuseTime
 	);
+
+	FPredictProjectilePathParams PathParams;
+	PathParams.bTraceWithChannel = true;
+	PathParams.bTraceWithCollision = true;
+	PathParams.DrawDebugTime = 5.f;
+	PathParams.DrawDebugType = EDrawDebugTrace::ForDuration;
+	PathParams.LaunchVelocity = GetActorForwardVector() * InitialSpeed;
+	PathParams.MaxSimTime = 4.f;
+	PathParams.ProjectileRadius = 5.f;
+	PathParams.SimFrequency = 30.f;
+	PathParams.StartLocation = GetActorLocation();
+	PathParams.TraceChannel = ECollisionChannel::ECC_Visibility;
+	PathParams.ActorsToIgnore.Add(this);
+	// gravity settings
+	PathParams.OverrideGravityZ = GetWorld()->GetGravityZ() * GravityPredict;
+
+	FPredictProjectilePathResult PathResult;
+
+	UGameplayStatics::PredictProjectilePath(this, PathParams, PathResult);
 }
 
 void AProjectileRocket::FuseTimerFinished()

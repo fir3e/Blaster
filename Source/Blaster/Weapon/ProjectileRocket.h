@@ -21,6 +21,10 @@ protected:
 	virtual void BeginPlay() override;
 	void FuseTimerFinished();
 
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
+#endif
+
 	UPROPERTY(EditAnywhere)
 	USoundCue* ProjectileLoop;
 
@@ -40,4 +44,7 @@ private:
 	float FuseTime = 3.f;
 
 	bool bIsActive = true;
+
+	UPROPERTY(EditAnywhere)
+	float GravityPredict = 1.f;
 };
