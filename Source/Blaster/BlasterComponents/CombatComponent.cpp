@@ -181,7 +181,7 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
-	if (Character == nullptr || EquippedWeapon == nullptr ) return;
+	if (Character == nullptr || EquippedWeapon == nullptr || CombatState == ECombatState::ECS_Reloading) return;
 	bAiming = bIsAiming;
 	ServerSetAiming(bIsAiming);
 	if (Character)
@@ -519,7 +519,7 @@ void UCombatComponent::PlayEquipWeaponSound(AWeapon* WeaponToEquip)
 
 void UCombatComponent::Reload()
 {
-	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon && !EquippedWeapon->IsFull() && !bLocallyReloading)
+	if (CarriedAmmo > 0 && CombatState == ECombatState::ECS_Unoccupied && EquippedWeapon && !EquippedWeapon->IsFull() && !bLocallyReloading && !bAiming)
 	{
 		ServerReload();
 		HandleReload();
