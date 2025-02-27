@@ -29,6 +29,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* BeamParticles;
 
+	UPROPERTY(EditAnywhere);
+	class UNiagaraSystem* BeamNiagara;
+
 	UPROPERTY(EditAnywhere)
 	UParticleSystem* MuzzleFlash;
 

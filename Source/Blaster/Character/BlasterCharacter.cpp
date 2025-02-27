@@ -442,6 +442,8 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 
 void ABlasterCharacter::Move(const FInputActionValue& Value)
 {
+	bSimulateMovement = false; // Disable Movement Simulation
+
 	if (bDisableGameplay) return;
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -836,7 +838,7 @@ void ABlasterCharacter::PlaySwapMontage()
 
 void ABlasterCharacter::PlayHitReactMontage()
 {
-	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr || Combat->CombatState == ECombatState::ECS_Reloading) return; // FIX: Don't play hit react while reloading
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 	if (AnimInstance && HitReactMontage && !bElimmed)

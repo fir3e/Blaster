@@ -11,6 +11,9 @@
 #include "WeaponTypes.h"
 #include "Blaster/BlasterComponents/LagCompensationComponent.h"
 
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
+
 #include "DrawDebugHelpers.h"
 
 void AHitScanWeapon::Fire(const FVector& HitTarget)
@@ -120,18 +123,38 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 
 		DrawDebugSphere(GetWorld(), BeamEnd, 12.f, 12, FColor::Orange, false, 2.f); // Debug Local Scatter
 
-		if (BeamParticles)
+		if (BeamNiagara)
 		{
-			UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+			UNiagaraComponent* Beam = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 				World,
-				BeamParticles,
+				BeamNiagara,
 				TraceStart,
 				FRotator::ZeroRotator,
+				FVector::OneVector,
+				true,
 				true
 			);
 			if (Beam)
 			{
-				Beam->SetVectorParameter(FName("Target"), BeamEnd);
+				Beam->SetVectorParameter(FName("BeamStart"), TraceStart);
+				Beam->SetVectorParameter(FName("BeamEnd"), BeamEnd);
+			}
+		}
+		else
+		{
+			if (BeamParticles)
+			{
+				UParticleSystemComponent* Beam = UGameplayStatics::SpawnEmitterAtLocation(
+					World,
+					BeamParticles,
+					TraceStart,
+					FRotator::ZeroRotator,
+					true
+				);
+				if (Beam)
+				{
+					Beam->SetVectorParameter(FName("Target"), BeamEnd);
+				}
 			}
 		}
 	}
