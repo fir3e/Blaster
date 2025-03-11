@@ -43,6 +43,8 @@ protected:
 	void SetHUDTime();
 	void PollInit();
 
+	virtual void SetupInputComponent() override;
+
 	/**
 	* Sync time between client and server
 	*/
@@ -73,9 +75,29 @@ protected:
 	void StopHighPingWarning();
 	void CheckPing(float DeltaTime);
 
+	void ShowReturnToMainMenu();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	class UInputMappingContext* InputMappingContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	class UInputAction* QuitAction;
+
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	/**
+	* Return to main menu
+	*/
+
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;
+
+	UPROPERTY()
+	class UReturnToMainMenu* ReturnToMainMenu;
+
+	bool bReturnToMainMenuOpen = false;
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;

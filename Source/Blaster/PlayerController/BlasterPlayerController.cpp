@@ -16,12 +16,30 @@
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Components/Image.h"
 
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
+#include "InputMappingContext.h"
+#include "Blaster/HUD/ReturnToMainMenu.h"
+
+
 void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 	ServerCheckMatchState();
+
+	// Add the Input Mapping Context to the Enhanced Input Subsystem
+	if (APlayerController* PC = Cast<APlayerController>(this))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			if (InputMappingContext) // Assume InputMappingContext is a UInputMappingContext*
+			{
+				Subsystem->AddMappingContext(InputMappingContext, 0); // Priority 0
+			}
+		}
+	}
 }
 
 void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -74,6 +92,27 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		if (PingAnimationRunningTime > HighPingDuration)
 		{
 			StopHighPingWarning();
+		}
+	}
+}
+
+void ABlasterPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainMenuWidget == nullptr) return;
+	if (ReturnToMainMenu == nullptr)
+	{
+		ReturnToMainMenu = CreateWidget<UReturnToMainMenu>(this, ReturnToMainMenuWidget);
+	}
+	if (ReturnToMainMenu)
+	{
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if (bReturnToMainMenuOpen)
+		{
+			ReturnToMainMenu->MenuSetup();
+		}
+		else
+		{
+			ReturnToMainMenu->MenuTearDown();
 		}
 	}
 }
@@ -411,6 +450,22 @@ void ABlasterPlayerController::PollInit()
 		{
 			BlasterControlledCharacter->SetupPlayerInput();
 		}
+	}
+}
+
+void ABlasterPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if (InputComponent == nullptr) return;
+
+	// Cast to EnhancedInputComponent
+	UEnhancedInputComponent* EnhancedInputComp = Cast<UEnhancedInputComponent>(InputComponent);
+	if (EnhancedInputComp == nullptr) return;
+
+	if (QuitAction)
+	{
+		EnhancedInputComp->BindAction(QuitAction, ETriggerEvent::Triggered, this, &ABlasterPlayerController::ShowReturnToMainMenu);
 	}
 }
 
