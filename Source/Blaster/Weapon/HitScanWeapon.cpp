@@ -121,7 +121,7 @@ void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& Hi
 			BeamEnd = OutHit.ImpactPoint;
 		}
 
-		DrawDebugSphere(GetWorld(), BeamEnd, 12.f, 12, FColor::Orange, false, 2.f); // Debug Local Scatter
+		//DrawDebugSphere(GetWorld(), BeamEnd, 12.f, 12, FColor::Orange, false, 2.f); // Debug Local Scatter
 
 		if (BeamNiagara)
 		{
