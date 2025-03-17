@@ -379,6 +379,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
+
 	/**
 	* Debug movement for server character
 	*/
