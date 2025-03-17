@@ -37,12 +37,15 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
 	int32 Defeats;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_Team)
 	ETeam Team = ETeam::ET_NoTeam;
+
+	UFUNCTION()
+	void OnRep_Team();
 
 public:
 	FORCEINLINE int32 GetDefeats() const { return Defeats; }
 	FORCEINLINE void SetDefeats(int32 NewDefeats) { Defeats = NewDefeats; }
 	FORCEINLINE ETeam GetTeam() const { return Team; }
-	FORCEINLINE void SetTeam(ETeam TeamToSet) { Team = TeamToSet; }
+	void SetTeam(ETeam TeamToSet);
 };
