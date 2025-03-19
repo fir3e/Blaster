@@ -86,6 +86,8 @@ void AProjectile::SpawnTrailSystem()
 void AProjectile::ExplodeDamage()
 {
 	APawn* FiringPawn = GetInstigator();
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this); // Fix for issue with not damaging players
 	if (FiringPawn && HasAuthority())
 	{
 		AController* FiringController = FiringPawn->GetController();
@@ -100,8 +102,8 @@ void AProjectile::ExplodeDamage()
 				DamageOuterRadius, // DamageOuterRadius
 				1.f, // DamageFalloff
 				UDamageType::StaticClass(), // DamageTypeClass
-				TArray<AActor*>(), // IgnoreActors
-				this, // DamageCauser
+				IgnoredActors, //TArray<AActor*>(), // IgnoreActors
+				GetOwner(), // DamageCauser
 				FiringController // InstigatorController
 			);
 		}

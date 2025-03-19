@@ -43,7 +43,7 @@ public:
 
 	FHighPingDelegate HighPingDelegate;
 
-	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
+	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim, EWeaponType WeaponType);
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
@@ -75,7 +75,7 @@ protected:
 	void ServerCheckMatchState();
 
 	UFUNCTION(Client, Reliable)
-	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
+	void ClientJoinMidgame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime, bool bIsTeamsMatch);
 
 	void HighPingWarning();
 	void StopHighPingWarning();
@@ -84,7 +84,7 @@ protected:
 	void ShowReturnToMainMenu();
 
 	UFUNCTION(Client, Reliable)
-	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim, EWeaponType WeaponType);
 
 	UPROPERTY(ReplicatedUsing = OnRep_ShowTeamScores)
 	bool bShowTeamScores = false;

@@ -35,11 +35,14 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* BlueTeamScore;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ScoreSpacerText;
+	//UPROPERTY(meta = (BindWidget))
+	//UTextBlock* ScoreSpacerText;
 
 	UPROPERTY(meta = (BindWidget))
-	class UImage* TeamImage;
+	class UImage* TeamImage_Red;
+
+	UPROPERTY(meta = (BindWidget))
+	class UImage* TeamImage_Blue;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DefeatsAmount;

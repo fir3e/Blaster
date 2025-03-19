@@ -78,7 +78,7 @@ float ABlasterGameMode::CalculateDamage(AController* Attacker, AController* Vict
 }
 
 
-void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
+void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController, EWeaponType WeaponType)
 {
 	if (AttackerController == nullptr || AttackerController->PlayerState == nullptr) return;
 	if (VictimController == nullptr || VictimController->PlayerState == nullptr) return;
@@ -133,7 +133,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
 		if (BlasterPlayer && AttackerPlayerState && VictimPlayerState)
 		{
-			BlasterPlayer->BroadcastElim(AttackerPlayerState, VictimPlayerState);
+			BlasterPlayer->BroadcastElim(AttackerPlayerState, VictimPlayerState, WeaponType);
 		}
 	}
 }

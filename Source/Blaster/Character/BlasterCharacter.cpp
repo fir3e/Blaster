@@ -455,7 +455,13 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 		{
 			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
-			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+			AWeapon* ElimWeapon = Cast<AWeapon>(DamageCauser);
+			EWeaponType ElimWeaponType = EWeaponType::EWT_MAX;
+			if (ElimWeapon)
+			{
+				ElimWeaponType = ElimWeapon->GetWeaponType();
+			}
+			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController, ElimWeaponType);
 		}
 	}
 }

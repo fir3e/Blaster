@@ -21,12 +21,12 @@
 #include "InputMappingContext.h"
 #include "Blaster/HUD/ReturnToMainMenu.h"
 
-void ABlasterPlayerController::BroadcastElim(APlayerState* Attacker, APlayerState* Victim)
+void ABlasterPlayerController::BroadcastElim(APlayerState* Attacker, APlayerState* Victim, EWeaponType WeaponType)
 {
-	ClientElimAnnouncement(Attacker, Victim);
+	ClientElimAnnouncement(Attacker, Victim, WeaponType);
 }
 
-void ABlasterPlayerController::ClientElimAnnouncement_Implementation(APlayerState* Attacker, APlayerState* Victim)
+void ABlasterPlayerController::ClientElimAnnouncement_Implementation(APlayerState* Attacker, APlayerState* Victim, EWeaponType WeaponType)
 {
 	APlayerState* Self = GetPlayerState<APlayerState>();
 	if (Attacker && Victim && Self)
@@ -36,25 +36,25 @@ void ABlasterPlayerController::ClientElimAnnouncement_Implementation(APlayerStat
 		{
 			if (Attacker == Self && Victim != Self)
 			{
-				BlasterHUD->AddElimAnnouncement("You", Victim->GetPlayerName());
+				BlasterHUD->AddElimAnnouncement("You", Victim->GetPlayerName(), *UEnum::GetValueAsString(WeaponType));
 				return;
 			}
 			if (Victim == Self && Attacker != Self)
 			{
-				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), "you");
+				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), "you", *UEnum::GetValueAsString(WeaponType));
 				return;
 			}
 			if (Attacker == Victim && Attacker == Self)
 			{
-				BlasterHUD->AddElimAnnouncement("You", "yourself");
+				BlasterHUD->AddElimAnnouncement("You", "yourself", *UEnum::GetValueAsString(WeaponType));
 				return;
 			}
 			if (Attacker == Victim && Attacker != Self)
 			{
-				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), "themselves");
+				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), "themselves", *UEnum::GetValueAsString(WeaponType));
 				return;
 			}
-			BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), Victim->GetPlayerName());
+			BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), Victim->GetPlayerName(), *UEnum::GetValueAsString(WeaponType));
 		}
 	}
 }
@@ -65,6 +65,8 @@ void ABlasterPlayerController::BeginPlay()
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 	ServerCheckMatchState();
+
+	//if (bShowTeamScores) HideTeamScores();
 
 	// Add the Input Mapping Context to the Enhanced Input Subsystem
 	if (APlayerController* PC = Cast<APlayerController>(this))
@@ -92,15 +94,18 @@ void ABlasterPlayerController::HideTeamScores()
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->TeamImage_Red &&
+		BlasterHUD->CharacterOverlay->TeamImage_Blue &&
 		BlasterHUD->CharacterOverlay->RedTeamScore &&
-		BlasterHUD->CharacterOverlay->BlueTeamScore &&
-		BlasterHUD->CharacterOverlay->ScoreSpacerText;
+		BlasterHUD->CharacterOverlay->BlueTeamScore;// &&
+		//BlasterHUD->CharacterOverlay->ScoreSpacerText;
 	if (bHUDValid)
 	{
 		BlasterHUD->CharacterOverlay->RedTeamScore->SetText(FText());
 		BlasterHUD->CharacterOverlay->BlueTeamScore->SetText(FText());
-		BlasterHUD->CharacterOverlay->ScoreSpacerText->SetText(FText());
-		BlasterHUD->CharacterOverlay->TeamImage->SetVisibility(ESlateVisibility::Hidden);
+		//BlasterHUD->CharacterOverlay->ScoreSpacerText->SetText(FText());
+		BlasterHUD->CharacterOverlay->TeamImage_Red->SetVisibility(ESlateVisibility::Hidden);
+		BlasterHUD->CharacterOverlay->TeamImage_Blue->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -109,17 +114,20 @@ void ABlasterPlayerController::InitTeamScores()
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->TeamImage_Red &&
+		BlasterHUD->CharacterOverlay->TeamImage_Blue &&
 		BlasterHUD->CharacterOverlay->RedTeamScore &&
-		BlasterHUD->CharacterOverlay->BlueTeamScore &&
-		BlasterHUD->CharacterOverlay->ScoreSpacerText;
+		BlasterHUD->CharacterOverlay->BlueTeamScore;// &&
+		//BlasterHUD->CharacterOverlay->ScoreSpacerText;
 	if (bHUDValid)
 	{
 		FString Zero("0");
 		FString Spacer("|");
 		BlasterHUD->CharacterOverlay->RedTeamScore->SetText(FText::FromString(Zero));
 		BlasterHUD->CharacterOverlay->BlueTeamScore->SetText(FText::FromString(Zero));
-		BlasterHUD->CharacterOverlay->ScoreSpacerText->SetText(FText::FromString(Spacer));
-		BlasterHUD->CharacterOverlay->TeamImage->SetVisibility(ESlateVisibility::Visible);
+		//BlasterHUD->CharacterOverlay->ScoreSpacerText->SetText(FText::FromString(Spacer));
+		BlasterHUD->CharacterOverlay->TeamImage_Red->SetVisibility(ESlateVisibility::Visible);
+		BlasterHUD->CharacterOverlay->TeamImage_Blue->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
@@ -168,7 +176,7 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		PlayerState = PlayerState == nullptr ? GetPlayerState<APlayerState>() : PlayerState;
 		if (PlayerState)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Ping: %d"), PlayerState->GetCompressedPing() * 4);
+			//UE_LOG(LogTemp, Warning, TEXT("Ping: %d"), PlayerState->GetCompressedPing() * 4);
 			if (PlayerState->GetCompressedPing() * 4 > HighPingTreshold) // ping is compressed; it's actually ping / 4 ( GetPing is outdated, use GetCompressedPing )
 			{
 				HighPingWarning();
@@ -284,24 +292,26 @@ void ABlasterPlayerController::ServerCheckMatchState_Implementation()
 	ABlasterGameMode* GameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GameMode)
 	{
+		bShowTeamScores = GameMode->bTeamsMatch; // added this to fix team scores not showing on clients
 		WarmupTime = GameMode->WarmupTime;
 		WarmupTime = GameMode->WarmupTime;
 		MatchTime = GameMode->MatchTime;
 		CooldownTime = GameMode->CooldownTime;
 		LevelStartingTime = GameMode->LevelStartingTime;
 		MatchState = GameMode->GetMatchState();
-		ClientJoinMidgame(MatchState, WarmupTime, MatchTime, CooldownTime, LevelStartingTime);
+		ClientJoinMidgame(MatchState, WarmupTime, MatchTime, CooldownTime, LevelStartingTime, bShowTeamScores);
 	}
 }
 
-void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime)
+void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime, bool bIsTeamsMatch)
 {
 	WarmupTime = Warmup;
 	MatchTime = Match;
 	CooldownTime = Cooldown;
 	LevelStartingTime = StartingTime;
 	MatchState = StateOfMatch;
-	OnMatchStateSet(MatchState);
+	OnMatchStateSet(MatchState, bIsTeamsMatch);
+	UE_LOG(LogTemp, Warning, TEXT("ClientJoinMidgame_Implementation: %d"), bIsTeamsMatch);
 	if (BlasterHUD && MatchState == MatchState::WaitingToStart)
 	{
 		BlasterHUD->AddAnnouncement();
@@ -648,7 +658,8 @@ void ABlasterPlayerController::OnRep_MatchState()
 
 void ABlasterPlayerController::HandleMatchHasStarted(bool bTeamsMatch)
 {
-	if (HasAuthority()) bShowTeamScores = bTeamsMatch;
+	bShowTeamScores = bTeamsMatch;
+	UE_LOG(LogTemp, Warning, TEXT("HandleMatchHasStarted: %d"), bTeamsMatch);
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	if (BlasterHUD)
 	{
@@ -657,7 +668,7 @@ void ABlasterPlayerController::HandleMatchHasStarted(bool bTeamsMatch)
 		{
 			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}
-		if (!HasAuthority()) return;
+		//if (!HasAuthority()) return;
 		if (bTeamsMatch)
 		{
 			InitTeamScores();
@@ -665,6 +676,7 @@ void ABlasterPlayerController::HandleMatchHasStarted(bool bTeamsMatch)
 		else
 		{
 			HideTeamScores();
+			UE_LOG(LogTemp, Warning, TEXT("HideTeamScores: %d"), bTeamsMatch);
 		}
 	}
 }
