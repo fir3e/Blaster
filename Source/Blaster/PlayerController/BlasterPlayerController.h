@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "BlasterPlayerController.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHighPingDelegate, bool, bHighPing);
@@ -43,7 +44,7 @@ public:
 
 	FHighPingDelegate HighPingDelegate;
 
-	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim, EWeaponType WeaponType);
+	void BroadcastElim(ABlasterPlayerState* Attacker, ABlasterPlayerState* Victim, EWeaponType WeaponType);
 protected:
 	virtual void BeginPlay() override;
 	void SetHUDTime();
@@ -84,7 +85,7 @@ protected:
 	void ShowReturnToMainMenu();
 
 	UFUNCTION(Client, Reliable)
-	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim, EWeaponType WeaponType);
+	void ClientElimAnnouncement(ABlasterPlayerState* Attacker, ABlasterPlayerState* Victim, EWeaponType WeaponType);
 
 	UPROPERTY(ReplicatedUsing = OnRep_ShowTeamScores)
 	bool bShowTeamScores = false;
@@ -98,6 +99,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	class UInputAction* QuitAction;
 
+	FString WeaponTypeToString(EWeaponType Type);
+	FString TeamColorToString(ETeam Team);
+
+	FString GetInfoText(const TArray<class ABlasterPlayerState*>& Players);
+	FString GetTeamsInfoText(class ABlasterGameState* BlasterGameState);
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;

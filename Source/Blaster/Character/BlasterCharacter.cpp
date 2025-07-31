@@ -378,7 +378,7 @@ void ABlasterCharacter::SetTeamColor(ETeam Team)
 	{
 	case ETeam::ET_NoTeam:
 		GetMesh()->SetMaterial(0, OriginalMaterial);
-		DissolveMaterialInstance = BlueDissolveMatInst;
+		DissolveMaterialInstance = DissolveMaterialInstance;
 		break;
 	case ETeam::ET_BlueTeam:
 		GetMesh()->SetMaterial(0, BlueMaterial);
@@ -456,7 +456,7 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
 			AWeapon* ElimWeapon = Cast<AWeapon>(DamageCauser);
-			EWeaponType ElimWeaponType = EWeaponType::EWT_MAX;
+			EWeaponType ElimWeaponType = EWeaponType::EWT_ThrowGrenade;
 			if (ElimWeapon)
 			{
 				ElimWeaponType = ElimWeapon->GetWeaponType();

@@ -20,43 +20,117 @@
 #include "EnhancedInputComponent.h"
 #include "InputMappingContext.h"
 #include "Blaster/HUD/ReturnToMainMenu.h"
+#include "Blaster/BlasterTypes/Announcement.h"
 
-void ABlasterPlayerController::BroadcastElim(APlayerState* Attacker, APlayerState* Victim, EWeaponType WeaponType)
+void ABlasterPlayerController::BroadcastElim(ABlasterPlayerState* Attacker, ABlasterPlayerState* Victim, EWeaponType WeaponType)
 {
 	ClientElimAnnouncement(Attacker, Victim, WeaponType);
 }
 
-void ABlasterPlayerController::ClientElimAnnouncement_Implementation(APlayerState* Attacker, APlayerState* Victim, EWeaponType WeaponType)
+void ABlasterPlayerController::ClientElimAnnouncement_Implementation(ABlasterPlayerState* Attacker, ABlasterPlayerState* Victim, EWeaponType WeaponType)
 {
-	APlayerState* Self = GetPlayerState<APlayerState>();
+	ABlasterPlayerState* Self = GetPlayerState<ABlasterPlayerState>();
+
 	if (Attacker && Victim && Self)
 	{
 		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 		if (BlasterHUD)
 		{
+			// Get team color strings using your function
+			FString AttackerColorTag = TeamColorToString(Attacker->GetTeam());
+			FString VictimColorTag = TeamColorToString(Victim->GetTeam());
+			FString WeaponStr = WeaponTypeToString(WeaponType);
+
+			// Format the message with rich text tags based on team colors
+			FString ElimMessage;
 			if (Attacker == Self && Victim != Self)
 			{
-				BlasterHUD->AddElimAnnouncement("You", Victim->GetPlayerName(), *UEnum::GetValueAsString(WeaponType));
-				return;
+				ElimMessage = FString::Printf(TEXT("<%s>You</> eliminated <%s>%s</> with %s"),
+					*AttackerColorTag, *VictimColorTag, *Victim->GetPlayerName(), *WeaponStr);
 			}
-			if (Victim == Self && Attacker != Self)
+			else if (Victim == Self && Attacker != Self)
 			{
-				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), "you", *UEnum::GetValueAsString(WeaponType));
-				return;
+				ElimMessage = FString::Printf(TEXT("<%s>%s</> eliminated <%s>you</> with %s"),
+					*AttackerColorTag, *Attacker->GetPlayerName(), *VictimColorTag, *WeaponStr);
 			}
-			if (Attacker == Victim && Attacker == Self)
+			else if (Attacker == Victim && Attacker == Self)
 			{
-				BlasterHUD->AddElimAnnouncement("You", "yourself", *UEnum::GetValueAsString(WeaponType));
-				return;
+				ElimMessage = FString::Printf(TEXT("<%s>You</> eliminated <%s>yourself</> with %s"),
+					*AttackerColorTag, *VictimColorTag, *WeaponStr);
 			}
-			if (Attacker == Victim && Attacker != Self)
+			else if (Attacker == Victim && Attacker != Self)
 			{
-				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), "themselves", *UEnum::GetValueAsString(WeaponType));
-				return;
+				ElimMessage = FString::Printf(TEXT("<%s>%s</> eliminated <%s>themselves</> with %s"),
+					*AttackerColorTag, *VictimColorTag, *Attacker->GetPlayerName(), *WeaponStr);
 			}
-			BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), Victim->GetPlayerName(), *UEnum::GetValueAsString(WeaponType));
+			else
+			{
+				ElimMessage = FString::Printf(TEXT("<%s>%s</> eliminated <%s>%s</> with %s"),
+					*AttackerColorTag, *Attacker->GetPlayerName(), *VictimColorTag, *Victim->GetPlayerName(), *WeaponStr);
+			}
+
+			// Pass the formatted message to the HUD
+			BlasterHUD->AddElimAnnouncement(ElimMessage);
 		}
 	}
+}
+
+FString ABlasterPlayerController::TeamColorToString(ETeam Team)
+{
+	FString TeamColor;
+	switch (Team)
+	{
+	case ETeam::ET_RedTeam:
+		TeamColor = FString("Red");
+		break;
+	case ETeam::ET_BlueTeam:
+		TeamColor = FString("Blue");
+		break;
+	case ETeam::ET_NoTeam:
+		TeamColor = FString("White");
+		break;
+	default:
+		TeamColor = FString("Unknown");
+		break;
+	}
+	return TeamColor;
+}
+
+FString ABlasterPlayerController::WeaponTypeToString(EWeaponType Type)
+{
+	FString WeaponName;
+
+	switch (Type)
+	{
+	case EWeaponType::EWT_AssaultRifle:
+		WeaponName = FString("<Yellow>Assault Rifle</>");
+		break;
+	case EWeaponType::EWT_RocketLauncher:
+		WeaponName = FString("<Yellow>Rocket Launcher</>");
+		break;
+	case EWeaponType::EWT_Pistol:
+		WeaponName = FString("<Yellow>Pistol</>");
+		break;
+	case EWeaponType::EWT_SubmachineGun:
+		WeaponName = FString("<Yellow>Submachine Gun</>");
+		break;
+	case EWeaponType::EWT_Shotgun:
+		WeaponName = FString("<Yellow>Shotgun</>");
+		break;
+	case EWeaponType::EWT_SniperRifle:
+		WeaponName = FString("<Yellow>Sniper Rifle</>");
+		break;
+	case EWeaponType::EWT_GrenadeLauncher:
+		WeaponName = FString("<Yellow>Grenade Launcher</>");
+		break;
+	case EWeaponType::EWT_ThrowGrenade:
+		WeaponName = FString("<Yellow>Throw Grenade</>");
+		break;
+	default:
+		WeaponName = FString("<Yellow>Unknown</>");
+		break;
+	}
+	return WeaponName;
 }
 
 void ABlasterPlayerController::BeginPlay()
@@ -65,8 +139,6 @@ void ABlasterPlayerController::BeginPlay()
 
 	BlasterHUD = Cast<ABlasterHUD>(GetHUD());
 	ServerCheckMatchState();
-
-	//if (bShowTeamScores) HideTeamScores();
 
 	// Add the Input Mapping Context to the Enhanced Input Subsystem
 	if (APlayerController* PC = Cast<APlayerController>(this))
@@ -311,7 +383,6 @@ void ABlasterPlayerController::ClientJoinMidgame_Implementation(FName StateOfMat
 	LevelStartingTime = StartingTime;
 	MatchState = StateOfMatch;
 	OnMatchStateSet(MatchState, bIsTeamsMatch);
-	UE_LOG(LogTemp, Warning, TEXT("ClientJoinMidgame_Implementation: %d"), bIsTeamsMatch);
 	if (BlasterHUD && MatchState == MatchState::WaitingToStart)
 	{
 		BlasterHUD->AddAnnouncement();
@@ -659,7 +730,6 @@ void ABlasterPlayerController::OnRep_MatchState()
 void ABlasterPlayerController::HandleMatchHasStarted(bool bTeamsMatch)
 {
 	bShowTeamScores = bTeamsMatch;
-	UE_LOG(LogTemp, Warning, TEXT("HandleMatchHasStarted: %d"), bTeamsMatch);
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	if (BlasterHUD)
 	{
@@ -694,7 +764,7 @@ void ABlasterPlayerController::HandleCooldown()
 		if (bHUDValid)
 		{
 			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
-			FString AnnouncementText("New Match Starts In:");
+			FString AnnouncementText = Announcement::NewMatchStartsIn;
 			BlasterHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
 
 			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
@@ -702,27 +772,7 @@ void ABlasterPlayerController::HandleCooldown()
 			if (BlasterGameState && BlasterPlayerState)
 			{
 				TArray<ABlasterPlayerState*> TopPlayers = BlasterGameState->TopScoringPlayers;
-				FString InfoTextString;
-				if (TopPlayers.Num() == 0)
-				{
-					InfoTextString = FString("There is no winner.");
-				}
-				else if (TopPlayers.Num() == 1 && TopPlayers[0] == BlasterPlayerState)
-				{
-					InfoTextString = FString("You are the winner!");
-				}
-				else if (TopPlayers.Num() == 1)
-				{
-					InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *TopPlayers[0]->GetPlayerName());
-				}
-				else if (TopPlayers.Num() > 1)
-				{
-					InfoTextString = FString("Players tied for the win:\n");
-					for (auto TiedPlayer : TopPlayers)
-					{
-						InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
-					}
-				}
+				FString InfoTextString = bShowTeamScores ? GetTeamsInfoText(BlasterGameState) : GetInfoText(TopPlayers);
 
 				BlasterHUD->Announcement->InfoText->SetText(FText::FromString(InfoTextString));
 			}
@@ -734,4 +784,72 @@ void ABlasterPlayerController::HandleCooldown()
 		BlasterCharacter->bDisableGameplay = true;
 		BlasterCharacter->GetCombat()->FireButtonPressed(false);
 	}
+}
+
+FString ABlasterPlayerController::GetInfoText(const TArray<class ABlasterPlayerState*>& Players)
+{
+	ABlasterPlayerState* BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+	if (BlasterPlayerState == nullptr) return FString();
+	FString InfoTextString;
+	if (Players.Num() == 0)
+	{
+		InfoTextString = Announcement::ThereIsNoWinner;
+	}
+	else if (Players.Num() == 1 && Players[0] == BlasterPlayerState)
+	{
+		InfoTextString = Announcement::YouAreTheWinner;
+	}
+	else if (Players.Num() == 1)
+	{
+		InfoTextString = FString::Printf(TEXT("Winner: \n%s"), *Players[0]->GetPlayerName());
+	}
+	else if (Players.Num() > 1)
+	{
+		InfoTextString = Announcement::PlayersTiedForTheWin;
+		InfoTextString.Append(FString("\n"));
+		for (auto TiedPlayer : Players)
+		{
+			InfoTextString.Append(FString::Printf(TEXT("%s\n"), *TiedPlayer->GetPlayerName()));
+		}
+	}
+
+	return InfoTextString;
+}
+
+FString ABlasterPlayerController::GetTeamsInfoText(ABlasterGameState* BlasterGameState)
+{
+	if (BlasterGameState == nullptr) return FString();
+	FString InfoTextString;
+
+	const int32 RedTeamScore = BlasterGameState->RedTeamScore;
+	const int32 BlueTeamScore = BlasterGameState->BlueTeamScore;
+
+	if (RedTeamScore == 0 && BlueTeamScore == 0)
+	{
+		InfoTextString = Announcement::ThereIsNoWinner;
+	}
+	else if (RedTeamScore == BlueTeamScore)
+	{
+		InfoTextString = FString::Printf(TEXT("%s\n"), *Announcement::TeamsTiedForTheWin);
+		InfoTextString.Append(Announcement::RedTeam);
+		InfoTextString.Append(TEXT("\n"));
+		InfoTextString.Append(Announcement::BlueTeam);
+		InfoTextString.Append(TEXT("\n"));
+	}
+	else if (RedTeamScore > BlueTeamScore)
+	{
+		InfoTextString = Announcement::RedTeamWins;
+		InfoTextString.Append(TEXT("\n"));
+		InfoTextString.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::RedTeam, RedTeamScore));
+		InfoTextString.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::BlueTeam, BlueTeamScore));
+	}
+	else if (BlueTeamScore > RedTeamScore)
+	{
+		InfoTextString = Announcement::BlueTeamWins;
+		InfoTextString.Append(TEXT("\n"));
+		InfoTextString.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::BlueTeam, BlueTeamScore));
+		InfoTextString.Append(FString::Printf(TEXT("%s: %d\n"), *Announcement::RedTeam, RedTeamScore));
+	}
+
+	return InfoTextString;
 }

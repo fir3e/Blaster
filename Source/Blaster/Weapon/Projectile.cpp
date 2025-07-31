@@ -90,6 +90,10 @@ void AProjectile::ExplodeDamage()
 	IgnoredActors.Add(this); // Fix for issue with not damaging players
 	if (FiringPawn && HasAuthority())
 	{
+		if (GetOwner() == nullptr)
+		{
+			SetOwner(this); // Fix for Grenade don't have a gun as it's owner
+		}
 		AController* FiringController = FiringPawn->GetController();
 		if (FiringController)
 		{
@@ -103,7 +107,7 @@ void AProjectile::ExplodeDamage()
 				1.f, // DamageFalloff
 				UDamageType::StaticClass(), // DamageTypeClass
 				IgnoredActors, //TArray<AActor*>(), // IgnoreActors
-				GetOwner(), // DamageCauser
+				GetOwner(), // DamageCauser (Weapon)
 				FiringController // InstigatorController
 			);
 		}

@@ -22,6 +22,8 @@ void AProjectileGrenade::BeginPlay()
 {
 	AActor::BeginPlay();
 
+	SetOwner(this);
+
 	SpawnTrailSystem();
 	StartDestroyTimer();
 	

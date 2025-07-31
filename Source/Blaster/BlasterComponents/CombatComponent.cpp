@@ -669,17 +669,24 @@ void UCombatComponent::ServerLaunchGrenade_Implementation(const FVector_NetQuant
 		StartingLocation = StartingLocation + Direction * GrenadeSpawnAdjustment;
 		FVector ToTarget = Target - StartingLocation;
 		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = Character;
+		SpawnParams.Owner = Character; // Grenede itself is the owner
 		SpawnParams.Instigator = Character;
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			World->SpawnActor<AProjectile>(
+			AProjectile* SpawnedProjectile = World->SpawnActor<AProjectile>(
 				GrenadeClass,
 				StartingLocation,
 				ToTarget.Rotation(),
 				SpawnParams
 			);
+
+			// Check if spawning was successful
+			if (SpawnedProjectile)
+			{
+				// Set the projectile as its own owner after spawning
+				SpawnedProjectile->SetOwner(nullptr);
+			}
 		}
 	}
 }

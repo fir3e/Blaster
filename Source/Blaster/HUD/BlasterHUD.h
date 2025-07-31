@@ -49,7 +49,7 @@ public:
 	class UAnnouncement* Announcement;
 
 	void AddAnnouncement();
-	void AddElimAnnouncement(FString Attacker, FString Victim, FString WeaponType);
+	void AddElimAnnouncement(FString ElimMsg);
 
 protected:
 	virtual void BeginPlay() override;
