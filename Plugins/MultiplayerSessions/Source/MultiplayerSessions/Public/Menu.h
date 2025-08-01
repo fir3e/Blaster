@@ -18,6 +18,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby")));
 
+	UFUNCTION()
+	void JoinSessionFromList(int32 Index);
+
 protected:
 
 	virtual bool Initialize() override;
@@ -43,6 +46,12 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UButton* JoinButton;
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* DebugButton;
+
+	UFUNCTION()
+	void DebugButtonClicked();
+
 	UFUNCTION()
 	void HostButtonClicked();
 
@@ -57,4 +66,13 @@ private:
 	int32 NumPublicConnections{4};
 	FString MatchType{TEXT("FreeForAll")};
 	FString PathToLobby{TEXT("")};
+
+	// Session list
+	UPROPERTY(meta = (BindWidget))
+	class UVerticalBox* SessionListBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Multiplayer", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class USessionRow> SessionRowClass;
+
+	TArray<FOnlineSessionSearchResult> AvailableSessionResults;
 };

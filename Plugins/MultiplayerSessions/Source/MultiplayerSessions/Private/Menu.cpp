@@ -3,6 +3,10 @@
 
 #include "Menu.h"
 #include "Components/Button.h"
+#include "Components/VerticalBox.h"
+#include "Components/TextBlock.h"
+#include "Components/Button.h"
+#include "SessionRow.h" // Ez a WBP_SessionRow C++ megfelelõje
 #include "MultiplayerSessionsSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
@@ -61,6 +65,10 @@ bool UMenu::Initialize()
 	{
 		JoinButton->OnClicked.AddDynamic(this, &ThisClass::JoinButtonClicked);
 	}
+	if (DebugButton)
+	{
+		DebugButton->OnClicked.AddDynamic(this, &ThisClass::DebugButtonClicked);
+	}
 
 	return true;
 }
@@ -113,24 +121,33 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 
 void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
 {
-	if (MultiplayerSessionsSubsystem == nullptr)
-	{
-		return;
-	}
+	if (!bWasSuccessful || SessionResults.Num() == 0 || !SessionRowClass || !SessionListBox) return;
 
-	for (auto Result : SessionResults)
+	UE_LOG(LogTemp, Warning, TEXT("Teszt Found %d sessions"), SessionResults.Num());
+
+
+	SessionListBox->ClearChildren();
+	AvailableSessionResults = SessionResults;
+
+	for (int32 i = 0; i < SessionResults.Num(); ++i)
 	{
-		FString SettingsValue;
-		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsValue);
-		if (SettingsValue == MatchType)
+		const FOnlineSessionSearchResult& Result = SessionResults[i];
+
+		FString MatchTypeValue;
+		Result.Session.SessionSettings.Get(FName("MatchType"), MatchTypeValue);
+		if (MatchTypeValue != MatchType) continue;
+
+		USessionRow* SessionRow = CreateWidget<USessionRow>(this, SessionRowClass);
+		if (SessionRow)
 		{
-			MultiplayerSessionsSubsystem->JoinSession(Result);
-			return;
+			FString SessionName;
+			Result.Session.SessionSettings.Get(FName("SessionName"), SessionName);
+			SessionRow->SetSessionName(SessionName);
+			SessionRow->SetSessionIndex(i);
+			SessionRow->SessionJoinButton->OnClicked.AddDynamic(SessionRow, &USessionRow::HandleJoinClicked);
+			SessionRow->ParentMenu = this; // hogy vissza tudjon hívni
+			SessionListBox->AddChild(SessionRow);
 		}
-	}
-	if (!bWasSuccessful || SessionResults.Num() == 0)
-	{
-		JoinButton->SetIsEnabled(true);
 	}
 }
 
@@ -187,6 +204,14 @@ void UMenu::JoinButtonClicked()
 	}
 }
 
+void UMenu::JoinSessionFromList(int32 Index)
+{
+	if (MultiplayerSessionsSubsystem && AvailableSessionResults.IsValidIndex(Index))
+	{
+		MultiplayerSessionsSubsystem->JoinSession(AvailableSessionResults[Index]);
+	}
+}
+
 void UMenu::MenuTearDown()
 {
 	RemoveFromParent();
@@ -201,4 +226,60 @@ void UMenu::MenuTearDown()
 			PlayerController->SetShowMouseCursor(false);
 		}
 	}
+}
+
+void UMenu::DebugButtonClicked()
+{
+	SessionListBox->ClearChildren();
+	AvailableSessionResults.Empty();
+
+	for (int32 i = 0; i < 2; ++i)
+	{
+		FOnlineSessionSearchResult DummyResult;
+
+		// Dummy session settings
+		FOnlineSessionSettings DummySettings;
+		DummySettings.NumPublicConnections = 10;
+		DummySettings.bShouldAdvertise = true;
+		DummySettings.bAllowJoinInProgress = true;
+		DummySettings.bUsesPresence = false;
+		DummySettings.Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+		FString DummyName = FString::Printf(TEXT("TestServer%d"), i + 1);
+		DummySettings.Set(FName("SessionName"), DummyName, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+
+		DummyResult.Session.SessionSettings = DummySettings;
+
+		AvailableSessionResults.Add(DummyResult);
+
+		USessionRow* SessionRow = CreateWidget<USessionRow>(this, SessionRowClass);
+		if (SessionRow)
+		{
+			SessionRow->SetSessionName(DummyName);
+			SessionRow->SetSessionIndex(i);
+			SessionRow->ParentMenu = this;
+			UE_LOG(LogTemp, Warning, TEXT("Adding SessionRow: %s"), *DummyName);
+			if (!SessionRow)
+			{
+				UE_LOG(LogTemp, Error, TEXT("SessionRow is nullptr!"));
+			}
+			if (!SessionRow->SessionJoinButton)
+			{
+				UE_LOG(LogTemp, Error, TEXT("SessionJoinButton is nullptr!"));
+				return;
+			}
+			SessionRow->SessionJoinButton->OnClicked.AddDynamic(SessionRow, &USessionRow::HandleJoinClicked);
+			if (!SessionListBox)
+			{
+				UE_LOG(LogTemp, Error, TEXT("SessionListBox is nullptr!"));
+				return;
+			}
+			SessionListBox->AddChild(SessionRow);
+		}
+	}
+
+	UTextBlock* DummyText = NewObject<UTextBlock>(this);
+	DummyText->SetText(FText::FromString("Test Row"));
+	SessionListBox->AddChild(DummyText);
+
+	UE_LOG(LogTemp, Warning, TEXT("Added dummy sessions for UI testing."));
 }
