@@ -591,6 +591,8 @@ void ABlasterPlayerController::SetHUDTime()
 		if (BlasterGameMode)
 		{
 			SecondsLeft = FMath::CeilToInt(BlasterGameMode->GetCountdownTime() + LevelStartingTime);
+
+			LevelStartingTime = BlasterGameMode->LevelStartingTime;
 		}
 	}
 
@@ -713,6 +715,21 @@ void ABlasterPlayerController::OnMatchStateSet(FName State, bool bTeamsMatch)
 	{
 		HandleCooldown();
 	}
+
+	// Random fix @Udemy
+	else if (MatchState == MatchState::WaitingToStart)
+	{
+		BlasterHUD = Cast<ABlasterHUD>(GetHUD()); // Always get the latest HUD
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddAnnouncement(); // Handle creation and viewport addition
+			if (BlasterHUD->Announcement)
+			{
+				BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
+				UE_LOG(LogTemp, Warning, TEXT("ANNOUNCEMENTHUD IS VALID, SETTING VISIBILITY TO VISIBLE."));
+			}
+		}
+	}
 }
 
 void ABlasterPlayerController::OnRep_MatchState()
@@ -724,6 +741,24 @@ void ABlasterPlayerController::OnRep_MatchState()
 	else if (MatchState == MatchState::Cooldown)
 	{
 		HandleCooldown();
+	}
+
+	// Random fix @Udemy
+	else if (MatchState == MatchState::WaitingToStart)
+	{
+		if (!HasAuthority())
+		{
+			ServerCheckMatchState(); // Request updated timings
+		}
+		BlasterHUD = Cast<ABlasterHUD>(GetHUD()); // Always get the latest HUD
+		if (BlasterHUD)
+		{
+			BlasterHUD->AddAnnouncement(); // Handle creation and viewport addition
+			if (BlasterHUD->Announcement)
+			{
+				BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
+			}
+		}
 	}
 }
 

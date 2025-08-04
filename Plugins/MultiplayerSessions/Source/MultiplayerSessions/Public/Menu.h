@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "OnlineSessionSettings.h"
 #include "Menu.generated.h"
 
 /**
@@ -48,6 +49,9 @@ private:
 
 	UPROPERTY(meta = (BindWidget))
 	UButton* DebugButton;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* PlayerSteamName;
 
 	UFUNCTION()
 	void DebugButtonClicked();

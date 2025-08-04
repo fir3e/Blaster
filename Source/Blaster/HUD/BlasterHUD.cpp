@@ -83,8 +83,16 @@ void ABlasterHUD::AddAnnouncement()
 	APlayerController* PlayerController = GetOwningPlayerController();
 	if (PlayerController && AnnouncementClass)
 	{
-		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
-		Announcement->AddToViewport();
+		// Create the widget only if it doesn’t exist @Udemy
+		if (!Announcement)
+		{
+			Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
+		}
+		// Add to viewport only if it’s not already there
+		if (Announcement && !Announcement->IsInViewport())
+		{
+			Announcement->AddToViewport();
+		}
 	}
 }
 

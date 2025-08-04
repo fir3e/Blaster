@@ -8,8 +8,9 @@
 #include "Components/Button.h"
 #include "SessionRow.h" // Ez a WBP_SessionRow C++ megfelelõje
 #include "MultiplayerSessionsSubsystem.h"
-#include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
+#include "OnlineSubsystemSteam.h"
+#include "Interfaces/OnlineIdentityInterface.h"
 
 void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
@@ -40,6 +41,36 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 		MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
 	}
 
+	FString PlayerUserName;
+
+	// Check if using Steam subsystem
+	if (IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get())
+	{
+		if (OnlineSubsystem->GetSubsystemName() == "Steam")
+		{
+			IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface();
+			if (Identity.IsValid())
+			{
+				TSharedPtr<const FUniqueNetId> UserId = Identity->GetUniquePlayerId(0);
+				if (UserId.IsValid())
+				{
+					PlayerUserName = Identity->GetPlayerNickname(*UserId); // Get Steam username
+				}
+			}
+		}
+	}
+
+	// Fallback to default session name if not using Steam or username not found
+	if (PlayerUserName.IsEmpty())
+	{
+		PlayerUserName = FString::Printf(TEXT("User_%d"), FMath::RandRange(1000, 9999));
+	}
+
+	if (PlayerSteamName)
+	{
+		PlayerSteamName->SetText(FText::FromString(PlayerUserName));
+	}
+
 	if (MultiplayerSessionsSubsystem)
 	{
 		MultiplayerSessionsSubsystem->MultiplayerOnCreateSessionComplete.AddDynamic(this, &ThisClass::OnCreateSession);
@@ -48,6 +79,8 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 		MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &ThisClass::OnDestroySession);
 		MultiplayerSessionsSubsystem->MultiplayerOnStartSessionComplete.AddDynamic(this, &ThisClass::OnStartSession);
 	}
+
+	
 }
 
 bool UMenu::Initialize()
@@ -145,7 +178,7 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 			SessionRow->SetSessionName(SessionName);
 			SessionRow->SetSessionIndex(i);
 			SessionRow->SessionJoinButton->OnClicked.AddDynamic(SessionRow, &USessionRow::HandleJoinClicked);
-			SessionRow->ParentMenu = this; // hogy vissza tudjon hívni
+			SessionRow->ParentMenu = this;
 			SessionListBox->AddChild(SessionRow);
 		}
 	}
@@ -188,9 +221,34 @@ void UMenu::OnStartSession(bool bWasSuccessful)
 void UMenu::HostButtonClicked()
 {
 	HostButton->SetIsEnabled(false);
+	FString SessionName;
+
+	// Check if using Steam subsystem
+	if (IOnlineSubsystem* OnlineSubsystem = IOnlineSubsystem::Get())
+	{
+		if (OnlineSubsystem->GetSubsystemName() == "Steam")
+		{
+			IOnlineIdentityPtr Identity = OnlineSubsystem->GetIdentityInterface();
+			if (Identity.IsValid())
+			{
+				TSharedPtr<const FUniqueNetId> UserId = Identity->GetUniquePlayerId(0);
+				if (UserId.IsValid())
+				{
+					SessionName = Identity->GetPlayerNickname(*UserId); // Get Steam username
+				}
+			}
+		}
+	}
+
+	// Fallback to default session name if not using Steam or username not found
+	if (SessionName.IsEmpty())
+	{
+		SessionName = FString::Printf(TEXT("Session_%d"), FMath::RandRange(1000, 9999));
+	}
+
 	if (MultiplayerSessionsSubsystem)
 	{
-		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);
+		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType, SessionName);
 	}
 }
 
